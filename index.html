@@ -3,94 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visita ao Cliente</title>
+    <title>Exibição de Clientes</title>
+      <link rel="icon" href="imagens/poseidon ico.png" type="image/x-icon">
+        <link rel="icon" href="imagens/poseidon ico.png" sizes="16x16" />
+        <link rel="icon" href="imagens/poseidon ico.png" sizes="32x32" type="image/png" />
+        <link rel="icon" href="imagens/poseidon ico.png" sizes="48x48" type="image/png" />
+        <link rel="apple-touch-icon" href="imagens/poseidon ico.png">
     <style>
         body {
-            background-image: url(imagens/agua.webp);
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-        }
-        th{
-            background-color: white;
-        }
-        td{
-            background-color: white;
-        }
-        input, textarea {
+    background-image: url(imagens/agua.webp);
+    display: grid;
+    justify-content: center;
+    justify-items: center;
+}
+        table {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            border-collapse: collapse;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        table, th, td {
+            border: 1px solid black;
         }
-        button:hover {
-            background-color: #45a049;
+        th, td {
+            background-color:white;
+            padding: 8px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <h2>Visita ao Cliente</h2>
-    <form id="visitaForm">
-        <label>Serviços Finalizados:</label>
-        <input type="checkbox" id="servicosFinalizados">
-        
-        <label>Observações:</label>
-        <textarea id="observacoes"></textarea>
-
-        <button type="button" onclick="salvarVisita()">Salvar</button>
-    </form>
+    <h1>Clientes Cadastrados</h1>
+    
+    <table id="clientesExibicao">
+        <thead>
+            <tr>
+                <th>Nome do Cliente</th>
+                <th>Finalização</th>
+                <th>Observações</th>
+                <th>Hora</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const clienteId = urlParams.get('id');
-        document.querySelector("h2").textContent = `Visita ao Cliente #${clienteId}`;
+        // Função para carregar e exibir os clientes armazenados
+        window.onload = function() {
+            let data = JSON.parse(localStorage.getItem('clientes'));
 
-        // Função para salvar uma visita e enviar via POST
-        function salvarVisita() {
-            const servicosFinalizados = document.getElementById('servicosFinalizados').checked;
-            const observacoes = document.getElementById('observacoes').value;
-            const dataHora = new Date().toLocaleString();
-            
-            // Cria um formulário oculto para enviar via POST
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'https://poseidonpiscinas.github.io/visitaConfirmada/'; // página de destino
+            if (data) {
+                let currentTime = new Date().getTime();
+                let elapsedTime = currentTime - data.timestamp;
 
-            // Adiciona os dados ao formulário
-            const inputServico = document.createElement('input');
-            inputServico.type = 'hidden';
-            inputServico.name = 'servicosFinalizados';
-            inputServico.value = servicosFinalizados ? 'Sim' : 'Não';
-            form.appendChild(inputServico);
-
-            const inputObservacoes = document.createElement('input');
-            inputObservacoes.type = 'hidden';
-            inputObservacoes.name = 'observacoes';
-            inputObservacoes.value = observacoes;
-            form.appendChild(inputObservacoes);
-
-            const inputDataHora = document.createElement('input');
-            inputDataHora.type = 'hidden';
-            inputDataHora.name = 'dataHora';
-            inputDataHora.value = dataHora;
-            form.appendChild(inputDataHora);
-
-            // Envia o formulário
-            document.body.appendChild(form);
-            form.submit();
-        }
+                // Se passaram mais de 12 horas (12 horas = 43200000 milissegundos)
+                if (elapsedTime > 43200000) {
+                    localStorage.removeItem('clientes');
+                    alert('Os dados expiraram e foram removidos.');
+                } else {
+                    let tableBody = document.getElementById('clientesExibicao').getElementsByTagName('tbody')[0];
+                    data.clientes.forEach(cliente => {
+                        let row = tableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${cliente.nome}</td>
+                            <td>${cliente.finalizacao ? 'Sim' : 'Não'}</td>
+                            <td>${cliente.observacoes}</td>
+                            <td>${cliente.hora}</td>
+                        `;
+                    });
+                }
+            } else {
+                alert('Não há dados armazenados ou os dados expiraram.');
+            }
+        };
     </script>
 </body>
 </html>
